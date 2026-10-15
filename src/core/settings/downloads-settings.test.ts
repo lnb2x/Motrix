@@ -31,6 +31,18 @@ async function fixture() {
   return { root, file, change, manager, request }
 }
 describe('Downloads atomic settings save', () => {
+  it('persists the automatic category switch and restores it after restart', async () => {
+    const { manager, file, request } = await fixture()
+    expect(manager.getApp().autoCategorizeDownloads).toBe(true)
+    const result = await createSaveDownloadsSettingsHandler(manager)({
+      ...request(),
+      settings: { app: { autoCategorizeDownloads: false } },
+    })
+    expect(result.ok).toBe(true)
+    const restored = new SettingsManager(file)
+    await restored.load()
+    expect(restored.getApp().autoCategorizeDownloads).toBe(false)
+  })
   it('durably commits folders, clipboard, performance and nested speed edits together', async () => {
     const { root, file, change, manager, request } = await fixture()
     const folder = path.join(root, 'downloads ')
