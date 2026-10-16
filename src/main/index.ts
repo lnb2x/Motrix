@@ -98,6 +98,7 @@ import { countActiveDownloads } from '@core/task/active-downloads'
 import { CompletedEngineTaskCleanup } from '@core/task/completed-engine-task-cleanup'
 import { handleCreateTask } from '@core/task/create-task-handler'
 import { DirectResourceValidatorService } from '@core/task/direct-resource-validator'
+import { categorySaveDirectory } from '@core/task/download-category-directory'
 import { FileCleanupServiceImpl } from '@core/task/file-cleanup-service'
 import { FinalNamePickerImpl } from '@core/task/final-name-picker'
 import { MediaMetaStoreImpl } from '@core/task/media-meta-store'
@@ -1857,13 +1858,14 @@ async function initializeMainProcess(): Promise<void> {
   })
   const beginLegacyInvitation = (): void => {
     runShellAsyncWork('legacy-import-discovery', async () => {
-      const state = await legacyNavigation.detect()
+      await legacyNavigation.detect()
       if (
-        !state.invitationPending ||
+        !legacyNavigation.getState().invitationPending ||
         !gate.isAccepted() ||
         !mainProcessWork.isAccepting()
       )
         return
+      legacyNavigation.finishInvitation()
       windowManager?.open('main', { show: true })
       navigateToMigration()
     })
@@ -2088,7 +2090,9 @@ async function initializeMainProcess(): Promise<void> {
     userDataDir: app.getPath('userData'),
   })
   const detectPluginFfmpeg = async () =>
-    projectActiveToLegacy(await detectElectronFfmpeg())
+    projectActiveToLegacy(
+      await pluginCapHost.ffmpeg.refreshDetection(detectElectronFfmpeg)
+    )
   const activePluginHost = new PluginHost({
     security: pluginSecurity,
     onSecurityChanged: () => {
@@ -2735,6 +2739,12 @@ async function initializeMainProcess(): Promise<void> {
         settingsManager.getApp().magnetFileSelection,
       finalNamePicker,
       getDefaultSaveDir: () => settingsManager.getApp().defaultSaveDir,
+      prepareMediaSaveDir: async (directory, filename) =>
+        categorySaveDirectory(
+          directory,
+          filename,
+          settingsManager.getApp().autoCategorizeDownloads
+        ),
       resolveSaveDir: downloadDirectories.resolveSelection,
       recordDirectory: (path) =>
         settingsManager.mutateDirectoryPreferences({
