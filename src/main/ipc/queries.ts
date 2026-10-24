@@ -182,6 +182,9 @@ export function buildQueryHandlers(ctx: QueryContext): QueryHandlerMap {
       createDirectoryPreferencesHandlers(settingsManager).get,
 
     [Queries.GetSystemAccentColor]: async () => getSystemAccentColor(),
+    [Queries.GetSettingsFileLocation]: async () => ({
+      path: settingsManager.getFilePath(),
+    }),
     [Queries.GetSettings]: async () => {
       return {
         ...settingsManager.get(),
@@ -283,7 +286,8 @@ export function buildQueryHandlers(ctx: QueryContext): QueryHandlerMap {
       return getFfmpegInstallStatus(userDataDir)
     },
 
-    [Queries.GetFfmpegDetection]: async () => detectFfmpeg(),
+    [Queries.GetFfmpegDetection]: async () =>
+      capabilityHost.ffmpeg.refreshDetection(detectFfmpeg),
 
     [Queries.GetTaskBtTracker]: createGetTaskBtTrackerHandler({
       engineAdapter,

@@ -1,6 +1,6 @@
 # Motrix — native multi-platform build and release
 #
-# A tag push builds each platform on a native runner, assembles the five
+# A tag push builds each platform on a native runner, assembles the six
 # independently produced artifact sets, validates their updater metadata, and
 # publishes exactly once. A manual dispatch exercises the same build and
 # assembly path without signing or publishing.
@@ -17,9 +17,7 @@
 # tree (src/main/platform/appimage-integration.ts). Snap has its own
 # strict-confinement build and Store promotion workflows. Flatpak reuses its
 # native build and installed-payload checks and joins both Linux release sets.
-# 32-bit targets remain
-# unsupported. Windows arm64 remains reserved until the aria2 lock supplies that
-# architecture.
+# 32-bit targets remain unsupported.
 
 name: Build/Release
 
@@ -57,6 +55,7 @@ jobs:
       - name: Checkout release source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       - name: Validate release metadata
@@ -160,9 +159,17 @@ jobs:
             platform: win32
             arch: x64
             rust_target: x86_64-pc-windows-msvc
-            electron_builder_args: --win --x64
+            electron_builder_args: --win nsis zip --x64
             resources_dir: release/win-unpacked/resources
             app_path: release/win-unpacked
+          - target: win32-arm64
+            os: windows-11-arm
+            platform: win32
+            arch: arm64
+            rust_target: aarch64-pc-windows-msvc
+            electron_builder_args: --win nsis zip --arm64
+            resources_dir: release/win-arm64-unpacked/resources
+            app_path: release/win-arm64-unpacked
 
     # rustc's musl std is self-contained; overriding the linker with Ubuntu's
     # musl-gcc mixes CRTs and produces binaries that SIGSEGV at load (see
@@ -175,11 +182,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup pnpm
         uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
-          version: 12.10.1
+          version: 12.15.0
           run_install: false
 
       - name: Setup Node.js
@@ -366,6 +375,15 @@ jobs:
               fs.accessSync(file, fs.constants.X_OK)
             }
           }
+
+      - name: Smoke test native Windows Electron runtime
+        if: matrix.platform == 'win32'
+        run: >-
+          pnpm run smoke:electron-package --
+          --app-dir "${{ matrix.app_path }}"
+          --platform ${{ matrix.platform }}
+          --arch ${{ matrix.arch }}
+          --report "release/size-reports/${{ matrix.target }}-runtime.json"
 
       - name: Verify staged Windows aria2 WebSocket contract
         if: matrix.platform == 'win32'
@@ -564,6 +582,7 @@ jobs:
             release/*.tar.gz
             release/latest*.yml
             release/size-reports/${{ matrix.target }}.json
+            release/size-reports/${{ matrix.target }}-runtime.json
             release/*.zip
           if-no-files-found: error
           retention-days: 7
@@ -603,7 +622,7 @@ jobs:
             electron_builder_args: --mac --arm64
             resources_dir: release/mac-arm64/Motrix.app/Contents/Resources
             app_path: release/mac-arm64/Motrix.app
-            electron_sha256: e04e411b58a0a14375dd21b0ab4a378fd38930a702e4e20e322fee4849404c0b
+            electron_sha256: 896c3a50b148e89a158dca08a6996a022ddf39b23aac871e107f5b4087f8caa9
           - target: darwin-x64
             os: macos-26-intel
             platform: darwin
@@ -612,16 +631,25 @@ jobs:
             electron_builder_args: --mac --x64
             resources_dir: release/mac/Motrix.app/Contents/Resources
             app_path: release/mac/Motrix.app
-            electron_sha256: 4fe494a7159b10a81e2098dab388719582065e99e604c4510bb117e282213566
+            electron_sha256: 7877c282e74a52f8d87949536a25735cf9982de1265b544c9cd258dd14eff4de
           - target: win32-x64
             os: windows-2025
             platform: win32
             arch: x64
             signing_environment: windows-release-signing
-            electron_builder_args: --win --x64
+            electron_builder_args: --win nsis zip --x64
             resources_dir: release/win-unpacked/resources
             app_path: release/win-unpacked
-            electron_sha256: eee30dc8fa1f5ea95490e59f44e46ea68dd24c6e93d22facf70fe5c2d4c2665c
+            electron_sha256: ae53887a23bb640369c93dbd38c408a2af5c0deb86f2fa76c6c244cb444b7f47
+          - target: win32-arm64
+            os: windows-11-arm
+            platform: win32
+            arch: arm64
+            signing_environment: windows-release-signing
+            electron_builder_args: --win nsis zip --arm64 '-c.nsis.artifactName=Motrix-Setup-${version}-arm64.exe' '-c.win.artifactName=Motrix-${version}-win-arm64.${ext}'
+            resources_dir: release/win-arm64-unpacked/resources
+            app_path: release/win-arm64-unpacked
+            electron_sha256: fbae273960b24b81ab7a5cdcf34dd83a8781ee6799ccc621c1d85d5ce197252d
     env:
       CUSTOM_DMGBUILD_PATH: ''
       ELECTRON_BUILDER_7ZIP_PATH: ''
@@ -898,7 +926,7 @@ jobs:
           EXPECTED_COMMIT: ${{ github.sha }}
           EXPECTED_PLATFORM: ${{ matrix.platform }}
           # Updated only after reviewing the verifier source itself.
-          VERIFIER_SHA256: efbb213aec76deba536afce7da0e37837ceb495c3b8510caf25f12c0e62f3eb8
+          VERIFIER_SHA256: 4d7b6c9cc9ecb4b8df13df35b0ce13fc3e384841236abe900d82004bfb46ca7b
         run: |
           const crypto = require('node:crypto')
           const fs = require('node:fs')
@@ -1056,7 +1084,7 @@ jobs:
           cp \
             signing-input/signing-policy/installer.nsh \
             signing-input/trusted/installer.nsh
-          url="https://github.com/electron/electron/releases/download/v44.7.0/electron-v44.7.0-${{ matrix.platform }}-${{ matrix.arch }}.zip"
+          url="https://github.com/electron/electron/releases/download/v45.0.0/electron-v45.0.0-${{ matrix.platform }}-${{ matrix.arch }}.zip"
           curl --fail --location --proto '=https' --tlsv1.2 \
             "$url" --output signing-input/trusted/electron.zip
           node - <<'NODE'
@@ -1566,11 +1594,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup pnpm
         uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
-          version: 12.10.1
+          version: 12.15.0
           run_install: false
 
       - name: Setup Node.js
@@ -1678,6 +1708,8 @@ jobs:
     steps:
       - name: Checkout release source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
@@ -1758,6 +1790,8 @@ jobs:
     steps:
       - name: Checkout release source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Require native GitHub-hosted Linux runner
         shell: bash
@@ -1943,6 +1977,8 @@ jobs:
     steps:
       - name: Checkout release source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Validate container release credentials
         shell: bash
@@ -2286,6 +2322,8 @@ jobs:
     steps:
       - name: Checkout release source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Require native GitHub-hosted Linux runner
         shell: bash

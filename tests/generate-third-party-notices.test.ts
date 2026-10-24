@@ -171,7 +171,7 @@ describe('third-party notice generator', () => {
 
     expect(bundle.packageCount).toBeGreaterThan(100)
     expect(inventory).toContain('| @xyflow/react | 12.12.0 |')
-    expect(inventory).toContain('| aria2 | 1.37.0-motrix.17 |')
+    expect(inventory).toContain('| aria2 | 1.37.0-motrix.19 |')
     expect(inventory).toContain('| motrix.filename-template | 1.1.1 |')
     expect(inventory).toContain('Apple San Francisco tray font')
     expect(licenses).toContain('GNU GENERAL PUBLIC LICENSE')
@@ -180,7 +180,7 @@ describe('third-party notice generator', () => {
     )
     expect(sbom.spdxVersion).toBe('SPDX-2.3')
     expect(sbom.packages).toContainEqual(
-      expect.objectContaining({ name: 'Electron', versionInfo: '44.7.0' })
+      expect.objectContaining({ name: 'Electron', versionInfo: '45.0.0' })
     )
     expect(sbom.packages).toContainEqual(
       expect.objectContaining({
@@ -282,7 +282,7 @@ describe('third-party notice generator', () => {
       expect(licenses).toContain('GNU GENERAL PUBLIC LICENSE')
     }
     const serverInventory = server.files['THIRD_PARTY_DEPENDENCIES.md']
-    expect(serverInventory).toContain('| aria2 | 1.37.0-motrix.17 |')
+    expect(serverInventory).toContain('| aria2 | 1.37.0-motrix.19 |')
     expect(serverInventory).toContain('| motrix.filename-template | 1.1.1 |')
     expect(serverInventory).not.toContain('| Electron |')
 

@@ -7,7 +7,7 @@
     "submit": "Desbloquear"
   },
   "operatorAdmin": {
-    "help": "Uso:\n  motrix-admin pairing pending [--json]\n  motrix-admin pairing approve <user-code> [--json]\n  motrix-admin pairing deny <user-code> [--json]\n\nO comando se comunica apenas com o servidor Motrix em execução, pela interface de loopback do contêiner.",
+    "help": "Uso:\n  motrix-admin pairing pending [--json]\n  motrix-admin pairing approve <user-code> [--json]\n  motrix-admin pairing deny <user-code> [--json]\n  motrix-admin extension pair\n\nO comando se comunica apenas com o servidor Motrix em execução, pela interface de loopback do contêiner.",
     "errorPrefix": "motrix-admin: {{message}}",
     "usageHint": "Execute `motrix-admin --help` para ver as instruções de uso.",
     "pending": {
@@ -55,6 +55,20 @@
         "loopback": "O servidor Motrix em execução está indisponível na interface de loopback do contêiner.",
         "approvalNotReady": "A aprovação de pareamento ainda não está pronta no servidor Motrix em execução."
       }
+    },
+    "extension": {
+      "heading": "Pending browser Extension pairing requests",
+      "identityNotice": "Verify that you initiated this request. Origin and claimed identity alone do not prove who is connecting. Terminal recording can capture the pairing code.",
+      "row": "{{index}}. {{browser}} [{{identity}}] Origin: {{origin}}; claimed ID: {{claimedId}}; Server: {{authority}}; {{seconds}} s remaining",
+      "select": "Enter the number of one request (Ctrl+C to exit): ",
+      "code": "Pairing code: {{code}}",
+      "instructions": "Type this code into the browser Extension. It expires at the original deadline. Ctrl+C closes this view without approving or denying the request.",
+      "none": "No pending Extension pairing requests. Start pairing in the Extension, then run this command again. If requests remain absent, check the remote Extension configuration.",
+      "ended": "The selected pairing request has ended. Check the Extension for its outcome.",
+      "ttyRequired": "Extension pairing requires interactive input, output and error terminals. Piping, redirection and JSON output are not supported.",
+      "cancelled": "Pairing code view closed. No approval or denial was sent.",
+      "invalidSelection": "Select exactly one listed request by its number.",
+      "unavailable": "The selected request expired, ended or changed. Start a new pairing attempt in the Extension."
     }
   },
   "common": {
@@ -692,18 +706,17 @@
         },
         "activity": {
           "transferTitle": {
-            "session": "Transferência da sessão",
+            "session": "Transferência recente",
             "lifetime": "Transferência total"
           },
           "download": "Download",
           "upload": "Upload",
           "loading": "Carregando atividade…",
           "collecting": "Coletando dados de transferência…",
-          "noSessionHistory": "Nenhuma transferência registrada nesta sessão do aplicativo.",
+          "noSessionHistory": "Nenhuma transferência recente registrada.",
           "lifetimeEmpty": "O histórico completo ainda não está disponível.",
           "noTraffic": "Sem tráfego de rede no momento.",
           "unavailable": "O histórico completo de atividade está indisponível.",
-          "coverageGap": "O monitoramento foi interrompido.",
           "retry": "Tentar novamente",
           "notAvailable": "Indisponível",
           "stale": {
@@ -712,7 +725,7 @@
           },
           "range": {
             "label": "Período de transferência",
-            "session": "Sessão (60 s)",
+            "session": "Últimos 60 s",
             "lifetime": "Todo o histórico",
             "latest": "Últimos 60 segundos",
             "adaptive_one": "Resolução adaptativa · {{count}} amostra",
@@ -775,7 +788,18 @@
             "sampleCount_one": "{{count}} amostra",
             "sampleCount_other": "{{count}} amostras",
             "sampleCount_many": "{{count}} amostras",
-            "noDataQualityIssues": "Nenhum aviso de monitoramento."
+            "noDataQualityIssues": "Nenhum aviso de monitoramento.",
+            "noSamples": "Sem amostras",
+            "overview": "Visão geral do histórico",
+            "rangeStart": "Início do intervalo",
+            "rangeEnd": "Fim do intervalo",
+            "earlier": "Histórico anterior",
+            "later": "Histórico mais recente",
+            "zoomIn": "Ampliar",
+            "zoomOut": "Reduzir",
+            "showAll": "Mostrar tudo",
+            "following": "Acompanhando os dados recentes",
+            "followLatest": "Voltar aos mais recentes"
           }
         },
         "pieces": {
@@ -915,6 +939,8 @@
         "removeMixedTitle": "Remover {{count}} tarefas?",
         "openFile": "Abrir arquivo",
         "openFileFailed": "Não foi possível abrir o arquivo",
+        "openFileAppFailed": "O sistema não conseguiu abrir este arquivo. Verifique se o aplicativo padrão ainda está instalado ou abra a pasta para escolher outro aplicativo.",
+        "openFileFailedHint": "Verifique se o arquivo ainda existe e se você tem permissão para abri-lo.",
         "chooseFiles": "Escolher arquivos…",
         "queueOrder": "Ordem dos downloads",
         "moveQueueTop": "Mover para o início",
@@ -1360,7 +1386,15 @@
         "historyCountHint": "Os registros de recuperação mais antigos são removidos.",
         "historyCountPositive": "Digite um número maior que 0."
       },
-      "description": "RPC, progresso e recuperação"
+      "description": "RPC, progresso e recuperação",
+      "configFile": {
+        "title": "Arquivo de configuração",
+        "serverTitle": "Arquivo de configuração do servidor",
+        "openDirectory": "Abrir pasta",
+        "copyPath": "Copiar caminho",
+        "copied": "Copiado",
+        "actionFailed": "Não foi possível concluir a ação. Tente novamente."
+      }
     },
     "about": {
       "appIconAlt": "Ícone do aplicativo Motrix",
@@ -2448,6 +2482,8 @@
       "accessHosts_many": "Pode ler {{count}} sites",
       "accessBroad": "Pode ler qualquer site",
       "attentionTitle": "Este plugin relatou um problema",
+      "runtimeStartFailed": "Não foi possível iniciar o ambiente de execução do plugin",
+      "runtimeFailed": "O ambiente de execução do plugin parou inesperadamente",
       "attentionGeneric": "Veja os logs para mais detalhes.",
       "viewIssue": "Ver problema",
       "removeTitle": "Remover plugin",
@@ -2477,6 +2513,7 @@
       },
       "copy": "Copiar logs com dados ocultos",
       "clear": "Limpar",
+      "clearFailed": "Não foi possível limpar os registros. Tente novamente.",
       "output": "Saída em tempo real",
       "entryCount_one": "{{count}} registro",
       "entryCount_other": "{{count}} registros",
@@ -2778,9 +2815,13 @@
         "title": "Requisito do FFmpeg",
         "notInstalled": "O FFmpeg não está instalado neste sistema.",
         "versionMismatch": "O FFmpeg {{version}} está instalado.",
-        "requiredByPlugin": "Este plugin exige o ffmpeg. Instale-o e tente novamente.",
+        "requiredByPlugin": "Você pode instalar o plugin agora. Configure uma versão compatível do FFmpeg antes de ativá-lo ou executá-lo.",
         "optionalDegraded": "Os recursos de mídia deste plugin ficarão indisponíveis até que o ffmpeg seja instalado."
       }
+    },
+    "runtime": {
+      "ffmpegUnavailable": "O FFmpeg não está disponível. Configure FFmpeg in Settings → Integration → Media Tools.",
+      "ffmpegIncompatible": "A versão do FFmpeg não atende aos requisitos deste plugin. Configure FFmpeg in Settings → Integration → Media Tools."
     }
   },
   "bridge": {
@@ -3097,6 +3138,7 @@
     "preserveFiles": "Downloaded files stay in their original location.",
     "chooseTasks": "Choose downloads",
     "skip": "Not now",
+    "skippedHint": "Você pode migrar mais tarde em {{settings}} → {{advanced}}.",
     "back": "Back",
     "loading": "Looking for your old downloads…",
     "empty": "There are no tasks to migrate from this folder.",
@@ -3355,5 +3397,17 @@
     },
     "confirmFileTitle": "Authorize file access",
     "confirmFile": "Allow this operation to read the following file?"
+  },
+  "downloadCategories": {
+    "label": "Download categories",
+    "compressed": "Compressed",
+    "documents": "Documents",
+    "music": "Music",
+    "programs": "Programs",
+    "video": "Video",
+    "other": "Other",
+    "showAll": "Show all categories",
+    "autoSort": "Automatically organize downloads",
+    "autoSortDesc": "Save new downloads in Compressed, Documents, Music, Programs, Video or Other subfolders of the selected folder. Existing files stay in place. Multi-file torrents stay together in Other."
   }
 }

@@ -99,6 +99,10 @@ import nativeMessagingExtensions from '@shared/config/native-messaging-extension
 import { AppError, ErrorCode } from '@shared/errors'
 import { EXTERNAL_URLS } from '@shared/external-urls'
 import { Commands } from '@shared/protocol/commands'
+import {
+  makeProtocolFailure,
+  makeProtocolSuccess,
+} from '@shared/protocol/errors'
 import { Events } from '@shared/protocol/events'
 import type { CommandHandlerMap } from '@shared/protocol/handler-types'
 import { OPERATION_CHANNELS } from '@shared/protocol/operation-channels'
@@ -1074,6 +1078,13 @@ export function buildCommandHandlers(ctx: CommandContext): CommandHandlerMap {
       }
     ),
 
+    [Commands.OpenSettingsDirectory]: async (payload: unknown) => {
+      z.undefined().parse(payload)
+      shell.showItemInFolder(settingsManager.getFilePath())
+      // The native reveal API does not report a completion result.
+      return true
+    },
+
     [Commands.UpdateSettings]: async (partial: unknown) => {
       const oldFull = settingsManager.get()
 
@@ -1626,19 +1637,15 @@ export function buildCommandHandlers(ctx: CommandContext): CommandHandlerMap {
     }),
 
     [Commands.EnablePlugin]: async (id: string) => {
-      pluginRegistry.assertSecurityAllowed?.(id)
-      pluginStateStore.setEnabled(id, true)
-      // Sync the in-memory IndexedPlugin.state so Queries.ListPlugins and
-      // downstream gating (PluginHost.activate, ActivationDispatcher,
-      // CrossPluginInvoker) see the new enabled flag without a process
-      // restart.
-      pluginRegistry.refreshState(id)
+      await pluginHost.enable(id)
       const state = pluginStateStore.get(id)
-      eventBus.emit(Events.PluginStatusChanged, {
-        id,
-        status: state?.status ?? 'inactive',
-        enabled: true,
-      })
+      if (state) {
+        eventBus.emit(Events.PluginStatusChanged, {
+          id,
+          status: state.status,
+          enabled: state.enabled,
+        })
+      }
       eventBus.emit(Events.ContributionIndexChanged)
       return { ok: true }
     },
@@ -1919,7 +1926,7 @@ export function buildCommandHandlers(ctx: CommandContext): CommandHandlerMap {
 
     [Commands.ClearPluginLogs]: async (payload: unknown) => {
       const parsed = z.object({ pluginId: z.string().min(1) }).parse(payload)
-      capabilityHost.clearLog(parsed.pluginId)
+      await capabilityHost.clearLog(parsed.pluginId)
       return { ok: true }
     },
 
@@ -2008,6 +2015,17 @@ export function registerCommandHandlers(ctx: CommandContext): () => void {
           // biome-ignore lint/suspicious/noExplicitAny: sender forwarded explicitly
           (handler as any)(event.sender, ...args)
         ).finally(() => leaveModal?.())
+      })
+    } else if (channel === Commands.OpenTaskFile) {
+      registerTrustedIpcHandler(channel, async (_event, ...args) => {
+        try {
+          await invoke(() => handler(...args))
+          return makeProtocolSuccess(null)
+        } catch (error) {
+          // Electron serializes thrown errors as messages, dropping the code
+          // needed to distinguish filesystem failures from OS app failures.
+          return makeProtocolFailure(error)
+        }
       })
     } else {
       registerTrustedIpcHandler(channel, async (_event, ...args) =>

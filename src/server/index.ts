@@ -100,6 +100,7 @@ import { commitPolledTerminalTransition } from '@core/task/actions/shared'
 import { CompletedEngineTaskCleanup } from '@core/task/completed-engine-task-cleanup'
 import { handleCreateTask } from '@core/task/create-task-handler'
 import { DirectResourceValidatorService } from '@core/task/direct-resource-validator'
+import { categorySaveDirectory } from '@core/task/download-category-directory'
 import { FileCleanupServiceImpl } from '@core/task/file-cleanup-service'
 import { FinalNamePickerImpl } from '@core/task/final-name-picker'
 import { MediaMetaStoreImpl } from '@core/task/media-meta-store'
@@ -599,7 +600,9 @@ async function main() {
     userDataDir: platform.userDataDir,
   })
   const detectPluginFfmpeg = async () =>
-    projectActiveToLegacy(await detectServerFfmpeg())
+    projectActiveToLegacy(
+      await pluginCapHost.ffmpeg.refreshDetection(detectServerFfmpeg)
+    )
   const pluginHost = new PluginHost({
     security: pluginSecurity,
     onSecurityChanged: () => {
@@ -1302,7 +1305,9 @@ async function main() {
     'operator token provisioned'
   )
 
+  const remoteExtensionConfig = parseRemoteExtensionConfig(process.env)
   const app = await createApp({
+    remoteExtensionConfig,
     torrentBodyLimitBytes,
     commandHandlers,
     queryHandlers,
@@ -1950,7 +1955,6 @@ async function main() {
           ? 16801
           : fixedPort
       const mdxpHost = process.env.MOTRIX_MDXP_HOST ?? '127.0.0.1'
-      const remoteExtensionConfig = parseRemoteExtensionConfig(process.env)
       if (remoteExtensionConfig.status === 'invalid') {
         log.warn(
           {
@@ -2001,6 +2005,14 @@ async function main() {
           new BridgeReceiver({
             mediaMetaStore,
             getDefaultSaveDir: () => settingsManager.getApp().defaultSaveDir,
+            prepareMediaSaveDir: (directory, filename) =>
+              downloadPathPolicy.prepareSaveDir(
+                categorySaveDirectory(
+                  directory,
+                  filename,
+                  settingsManager.getApp().autoCategorizeDownloads
+                )
+              ),
             resolveSaveDir: downloadDirectories.resolveSelection,
             recordDirectory: (path) =>
               settingsManager.mutateDirectoryPreferences({

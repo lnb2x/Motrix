@@ -1,11 +1,16 @@
 import '@test-utils/dom-animations'
 import '@renderer/lib/i18n'
 import '@testing-library/jest-dom/vitest'
+import {
+  type PlatformServices,
+  PlatformServicesProvider,
+} from '@renderer/platform/services'
 import type {
   ConsentPayload,
   ConsentPayloadFfmpegRuntime,
 } from '@shared/types/plugin-install'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { holdExitAnimation } from '@test-utils/hold-exit-animation'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 interface MockInstallState {
@@ -71,6 +76,73 @@ beforeEach(() => {
 })
 
 describe('PluginInstallDialog', () => {
+  it('starts a fresh input session and ignores an old file preparation when reopened during exit', async () => {
+    let finishFile!: (value: {
+      sourceType: 'local'
+      absPath: string
+      fileHash: string
+    }) => void
+    const prepare = vi.fn().mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finishFile = resolve
+        })
+    )
+    const services: PlatformServices = {
+      kind: 'electron',
+      pluginInstallFile: { mode: 'local-path', prepare },
+      pickSaveDir: vi.fn(),
+      closeHost: vi.fn(),
+      readClipboard: vi.fn(),
+      openExternal: vi.fn(),
+      notify: vi.fn(),
+    }
+    const onOpenChange = vi.fn()
+    const content = (open: boolean) => (
+      <PlatformServicesProvider services={services}>
+        <PluginInstallDialog open={open} onOpenChange={onOpenChange} />
+      </PlatformServicesProvider>
+    )
+    const view = render(content(true))
+    const dialog = screen.getByRole('dialog')
+    const input = screen.getByPlaceholderText(/Paste a GitHub/i)
+    const finishExit = holdExitAnimation(dialog)
+    fireEvent.change(dialog.querySelector('input[type="file"]')!, {
+      target: { files: [new File(['plugin'], 'old.moext')] },
+    })
+    expect(prepare).toHaveBeenCalledOnce()
+    view.rerender(content(false))
+    expect(dialog).toContainElement(input)
+    expect(input).toHaveValue('old.moext')
+    view.rerender(content(true))
+    expect(screen.getByPlaceholderText(/Paste a GitHub/i)).not.toBe(input)
+    expect(screen.getByPlaceholderText(/Paste a GitHub/i)).toHaveValue('')
+    await act(async () =>
+      finishFile({
+        sourceType: 'local',
+        absPath: '/old.moext',
+        fileHash: 'a'.repeat(64),
+      })
+    )
+    expect(state.startInstall).not.toHaveBeenCalled()
+    view.rerender(content(false))
+    await finishExit()
+  })
+
+  it('keeps the source input and its draft throughout exit', async () => {
+    const props = { onOpenChange: vi.fn() }
+    const view = render(<PluginInstallDialog open {...props} />)
+    const input = screen.getByPlaceholderText(/Paste a GitHub/i)
+    fireEvent.change(input, { target: { value: 'owner/repo' } })
+    const dialog = screen.getByRole('dialog')
+    const finish = holdExitAnimation(dialog)
+    view.rerender(<PluginInstallDialog open={false} {...props} />)
+    expect(dialog).toHaveAttribute('data-closed')
+    expect(dialog).toContainElement(input)
+    expect(input).toHaveValue('owner/repo')
+    await finish()
+  })
+
   it('renders only PluginInputGroup in stage 1', () => {
     render(<PluginInstallDialog open onOpenChange={vi.fn()} />)
     expect(screen.getByText('Add plugin')).toBeInTheDocument()
@@ -142,7 +214,7 @@ describe('PluginInstallDialog — ffmpegRuntime block', () => {
     expect(screen.getByTestId('install-commit-btn')).toBeEnabled()
   })
 
-  it('renders red ABORT block when required + !satisfies; disables commit', () => {
+  it('warns about a missing required runtime but still allows installation', () => {
     state.consent = withFfmpeg({
       available: false,
       satisfiesRange: false,
@@ -150,10 +222,12 @@ describe('PluginInstallDialog — ffmpegRuntime block', () => {
     })
     state.stagingId = 's1'
     render(<PluginInstallDialog open onOpenChange={vi.fn()} />)
-    expect(screen.getByTestId('ffmpeg-runtime-block')).toHaveClass(
-      /destructive/
+    expect(screen.getByTestId('ffmpeg-runtime-block')).not.toHaveClass(
+      'text-destructive'
     )
-    expect(screen.getByTestId('install-commit-btn')).toBeDisabled()
+    expect(screen.getByTestId('install-commit-btn')).toBeEnabled()
+    fireEvent.click(screen.getByTestId('install-commit-btn'))
+    expect(state.confirm).toHaveBeenCalled()
   })
 
   it('renders yellow notice when optional + !available; commit enabled', () => {

@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { TaskActivityService, type TaskActivityStore } from '@core/activity'
 import { createTaskInspectorActivityQuery } from '@core/inspector-activity'
+import { FfmpegCapabilityHost } from '@core/plugin/capabilities/ffmpeg'
 import { ErrorCode } from '@shared/errors'
 import { PROTOCOL_ENVELOPE_VERSION } from '@shared/protocol/errors'
 import { Queries } from '@shared/protocol/queries'
@@ -313,6 +314,20 @@ describe('buildQueryHandlers', () => {
       'probing'
     )
     expect(getSyncStatus).toHaveBeenCalledOnce()
+  })
+
+  it('returns the active settings file instead of inferring it from the data directory', async () => {
+    const handlers = buildQueryHandlers({
+      userDataDir: '/default/profile',
+      settingsManager: {
+        getFilePath: () => '/custom profile/settings.json',
+      },
+    } as unknown as QueryContext)
+    await expect(
+      handlers[Queries.GetSettingsFileLocation]?.()
+    ).resolves.toEqual({
+      path: '/custom profile/settings.json',
+    })
   })
 
   it('returns the committed locale separately from a saved system preference', async () => {
@@ -770,6 +785,36 @@ describe('GetFfmpegDetection handler', () => {
     mockedFfmpegFactory.mockClear()
   })
 
+  it('does not let an older detection replace a newer unavailable result', async () => {
+    const oldResult = {
+      active: { path: '/old/ffmpeg', version: '7.0' },
+      candidates: [],
+    }
+    let finish!: (result: typeof oldResult) => void
+    const probe = vi
+      .fn()
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finish = resolve
+          })
+      )
+      .mockResolvedValueOnce({ active: null, candidates: [] })
+    mockedFfmpegFactory.mockReturnValueOnce(probe)
+    const ffmpeg = new FfmpegCapabilityHost({ detect: { available: false } })
+    const ctx = {
+      settingsManager: {},
+      userDataDir: '/data',
+      capabilityHost: { ffmpeg },
+    } as unknown as QueryContext
+    const handlers = buildQueryHandlers(ctx)
+    const old = handlers[Queries.GetFfmpegDetection]?.()
+    await handlers[Queries.GetFfmpegDetection]?.()
+    finish(oldResult)
+    await old
+    expect(ffmpeg.available).toBe(false)
+  })
+
   it('returns the enriched detection result from the factory', async () => {
     const fakeDetection = {
       active: { path: '/u/ffmpeg', version: '6.0.1' },
@@ -799,7 +844,9 @@ describe('GetFfmpegDetection handler', () => {
     const settingsManager = {
       get: vi.fn(() => ({ media: { ffmpegBinaryPath: '/u/ffmpeg' } })),
     }
+    const ffmpeg = new FfmpegCapabilityHost({ detect: { available: false } })
     const ctx = {
+      capabilityHost: { ffmpeg },
       settingsManager,
       userDataDir: '/data',
     } as unknown as QueryContext
@@ -807,6 +854,8 @@ describe('GetFfmpegDetection handler', () => {
     const handlers = buildQueryHandlers(ctx)
     const result = await handlers[Queries.GetFfmpegDetection]?.()
     expect(result).toEqual(fakeDetection)
+    expect(ffmpeg.available).toBe(true)
+    expect(ffmpeg.version).toBe(fakeDetection.active.version)
     expect(mockedFfmpegFactory).toHaveBeenCalledWith({
       settingsManager,
       userDataDir: '/data',

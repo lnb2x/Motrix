@@ -1,5 +1,4 @@
 import { RunMode } from '@shared/constants'
-import { DEFAULT_LOCALE } from '@shared/constants/locales'
 import type { MotrixAppSettings } from '@shared/types/settings'
 import { z } from 'zod'
 import {
@@ -41,13 +40,14 @@ export const appSettingsSchema = z.object({
   theme: z.enum(['system', 'light', 'dark']).catch('system'),
   sidebarColor: sidebarColorSchema.catch('cyan'),
   reduceMotion: z.boolean().catch(false),
-  language: languagePreferenceSchema.catch(DEFAULT_LOCALE),
+  language: languagePreferenceSchema.catch('system'),
   byteUnitSystem: byteUnitSystemSchema.catch(DEFAULT_BYTE_UNIT_PREFERENCE),
   speedLimitUnits: speedLimitUnitsSchema.catch(speedLimitUnitsSchema.parse({})),
   // Empty string is a sentinel: SettingsManager (main/server) seeds the
   // absolute platform download directory on first load. The renderer never
   // observes '' because settings are loaded before the UI mounts.
   defaultSaveDir: z.string().catch(''),
+  autoCategorizeDownloads: z.boolean().catch(true),
   fileDeletionMode: fileDeletionModeSchema.catch('trash'),
   directoryPreferences: DirectoryPreferencesSchema.catch({
     favorites: [],

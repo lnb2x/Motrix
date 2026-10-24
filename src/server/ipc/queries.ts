@@ -285,6 +285,10 @@ export function buildServerQueryHandlers(
     // A remote server cannot read the browser user's operating-system accent.
     [Queries.GetSystemAccentColor]: async () => null,
 
+    [Queries.GetSettingsFileLocation]: async () => ({
+      path: settingsManager.getFilePath(),
+    }),
+
     [Queries.GetGeoIPStatus]: createGetGeoIPStatusHandler({ geoipManager }),
 
     [Queries.GetSystemProxy]: async () => parseProxyEnvironment(environment),
@@ -338,7 +342,8 @@ export function buildServerQueryHandlers(
     [Queries.GetTaskBtTracker]: async ({ engineGid }: { engineGid: string }) =>
       engineAdapter.getTaskBtTracker(engineGid),
 
-    [Queries.GetFfmpegDetection]: async () => detectFfmpeg(),
+    [Queries.GetFfmpegDetection]: async () =>
+      capabilityHost.ffmpeg.refreshDetection(detectFfmpeg),
 
     [Queries.ListPlugins]: async () => pluginRegistry.list(),
 
