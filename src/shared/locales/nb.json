@@ -2007,6 +2007,8 @@
     "desc": "Konfigurer Motrix",
     "downloads": {
       "autofillFromClipboard": "Fyll inn lenker fra utklippstavlen automatisk",
+      "autoCategorize": "Automatically organize downloads",
+      "autoCategorizeDesc": "Save link downloads in Video, Music, Images, Documents, Archives, Programs or Others under the selected folder. Torrent layouts stay unchanged.",
       "defaultDownloadFolder": "Standard nedlastingsmappe",
       "description": "Filer, nedlastingshastighet og tilkoblinger",
       "disk": {

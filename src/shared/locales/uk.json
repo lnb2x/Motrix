@@ -2045,6 +2045,8 @@
     "desc": "Налаштувати Motrix",
     "downloads": {
       "autofillFromClipboard": "Автоматично вставляти посилання з буфера обміну",
+      "autoCategorize": "Automatically organize downloads",
+      "autoCategorizeDesc": "Save link downloads in Video, Music, Images, Documents, Archives, Programs or Others under the selected folder. Torrent layouts stay unchanged.",
       "defaultDownloadFolder": "Типова тека завантажень",
       "description": "Файли, швидкість завантаження й з'єднання",
       "disk": {

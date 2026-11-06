@@ -88,6 +88,7 @@ import {
   type DirectResourceValidatorService,
   sanitizeRemoteFilename,
 } from './direct-resource-validator'
+import { categorizedSaveDirectory } from './download-category'
 import type { FinalNamePicker } from './final-name-picker'
 import { findPathOverrun } from './path-length'
 import { toTempPath } from './paths'
@@ -397,11 +398,12 @@ async function handleCreateTaskUnderAdmission(
     ]).map((source) => source.sourceUrl)
 
   const requestedSaveDir = req.saveDir || appSettings.defaultSaveDir
-  const effectiveSaveDir =
+  let effectiveSaveDir =
     preparedSaveDir ??
     (deps.prepareSaveDir
       ? await deps.prepareSaveDir(requestedSaveDir)
       : requestedSaveDir)
+  const categoryRoot = effectiveSaveDir
   const taskId = newTaskId()
 
   log.info(
@@ -479,6 +481,16 @@ async function handleCreateTaskUnderAdmission(
 
   // 1. Decide final on-disk name (handles collisions).
   const desiredName = deriveDesiredName(req, torrentInfoName)
+  const categoryDirectory = async (name: string): Promise<string> => {
+    const target = categorizedSaveDirectory(
+      categoryRoot,
+      name,
+      req.type === 'http' && appSettings.autoCategorizeDownloads
+    )
+    if (target === categoryRoot) return categoryRoot
+    return deps.prepareSaveDir ? deps.prepareSaveDir(target) : target
+  }
+  effectiveSaveDir = await categoryDirectory(desiredName)
   if (
     req.type === 'bt' &&
     btInfoHash &&
@@ -659,7 +671,23 @@ async function handleCreateTaskUnderAdmission(
     let currentHttpDesiredName = desiredName
     const pickHttpName = async (nextDesiredName: string): Promise<void> => {
       if (nextDesiredName === currentHttpDesiredName) return
-      finalName = await pickHttpFinalName(nextDesiredName)
+      const nextDirectory = await categoryDirectory(nextDesiredName)
+      const nextReservedNames = reservedBtFinalNames(
+        deps.taskManager.getAll(),
+        nextDirectory
+      )
+      const nextFinalName =
+        nextReservedNames.length > 0
+          ? await deps.finalNamePicker.pick(
+              nextDirectory,
+              nextDesiredName,
+              nextReservedNames
+            )
+          : await deps.finalNamePicker.pick(nextDirectory, nextDesiredName)
+      await ensureDirectory(nextDirectory)
+      effectiveSaveDir = nextDirectory
+      finalName = nextFinalName
+      params.saveDir = nextDirectory
       currentHttpDesiredName = nextDesiredName
       finalPath = path.join(effectiveSaveDir, finalName)
       diskPath = toTempPath(finalPath)

@@ -1711,6 +1711,8 @@
         "bandwidthPending": "Wpisz obie prędkości łącza, aby zastosować ten limit."
       },
       "newTasks": "Nowe zadania",
+      "autoCategorize": "Automatically organize downloads",
+      "autoCategorizeDesc": "Save link downloads in Video, Music, Images, Documents, Archives, Programs or Others under the selected folder. Torrent layouts stay unchanged.",
       "defaultDownloadFolder": "Domyślny folder pobierania",
       "autofillFromClipboard": "Automatycznie wstawiaj linki ze schowka",
       "fillInLinksWhenOpeningNewTask": "Wklejaj skopiowane linki przy otwieraniu nowego zadania.",

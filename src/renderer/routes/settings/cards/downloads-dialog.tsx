@@ -160,6 +160,29 @@ export function DownloadsDialog({
                     <p className="text-xs text-muted-foreground">
                       {t('directoryPreferences.description')}
                     </p>
+                    <FormField
+                      control={form.control}
+                      name="app.autoCategorizeDownloads"
+                      render={({ field }) => (
+                        <SettingsFormRow>
+                          <div className="space-y-1">
+                            <FormLabel>
+                              {t('settings.downloads.autoCategorize')}
+                            </FormLabel>
+                            <FormDescription className="text-xs">
+                              {t('settings.downloads.autoCategorizeDesc')}
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              disabled={disabled}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </SettingsFormRow>
+                      )}
+                    />
                     <DirectoryPreferencesSection
                       preferences={directories.preferences}
                       onChange={directories.setPreferences}

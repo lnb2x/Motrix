@@ -2007,6 +2007,8 @@
     "desc": "Motrix configureren",
     "downloads": {
       "autofillFromClipboard": "Links automatisch invullen vanuit klembord",
+      "autoCategorize": "Automatically organize downloads",
+      "autoCategorizeDesc": "Save link downloads in Video, Music, Images, Documents, Archives, Programs or Others under the selected folder. Torrent layouts stay unchanged.",
       "defaultDownloadFolder": "Standaarddownloadmap",
       "description": "Bestanden, downloadsnelheid en verbindingen",
       "disk": {

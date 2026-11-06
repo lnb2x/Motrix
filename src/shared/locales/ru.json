@@ -1711,6 +1711,8 @@
         "bandwidthPending": "Укажите обе скорости подключения, чтобы применить это ограничение."
       },
       "newTasks": "Новые задачи",
+      "autoCategorize": "Automatically organize downloads",
+      "autoCategorizeDesc": "Save link downloads in Video, Music, Images, Documents, Archives, Programs or Others under the selected folder. Torrent layouts stay unchanged.",
       "defaultDownloadFolder": "Папка загрузок по умолчанию",
       "autofillFromClipboard": "Автоматически вставлять ссылки из буфера обмена",
       "fillInLinksWhenOpeningNewTask": "Вставлять скопированные ссылки при открытии новой задачи.",

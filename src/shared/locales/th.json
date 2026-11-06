@@ -1988,6 +1988,8 @@
     "desc": "ตั้งค่า Motrix",
     "downloads": {
       "autofillFromClipboard": "กรอกลิงก์จากคลิปบอร์ดอัตโนมัติ",
+      "autoCategorize": "Automatically organize downloads",
+      "autoCategorizeDesc": "Save link downloads in Video, Music, Images, Documents, Archives, Programs or Others under the selected folder. Torrent layouts stay unchanged.",
       "defaultDownloadFolder": "โฟลเดอร์ดาวน์โหลดเริ่มต้น",
       "description": "ไฟล์ ความเร็วดาวน์โหลด และการเชื่อมต่อ",
       "disk": {

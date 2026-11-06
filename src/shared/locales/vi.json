@@ -1669,6 +1669,8 @@
         "bandwidthPending": "Nhập cả hai tốc độ kết nối để áp dụng giới hạn này."
       },
       "newTasks": "Tác vụ mới",
+      "autoCategorize": "Tự động phân loại file tải về",
+      "autoCategorizeDesc": "Lưu file tải qua liên kết vào Video, Music, Images, Documents, Archives, Programs hoặc Others trong thư mục đã chọn. Giữ nguyên cấu trúc torrent.",
       "defaultDownloadFolder": "Thư mục tải xuống mặc định",
       "autofillFromClipboard": "Tự điền liên kết từ bảng nhớ tạm",
       "fillInLinksWhenOpeningNewTask": "Tự dán liên kết đã sao chép khi mở tác vụ mới.",

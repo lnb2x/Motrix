@@ -2007,6 +2007,8 @@
     "desc": "پیکربندی Motrix",
     "downloads": {
       "autofillFromClipboard": "پر کردن خودکار پیوندها از کلیپ‌بورد",
+      "autoCategorize": "Automatically organize downloads",
+      "autoCategorizeDesc": "Save link downloads in Video, Music, Images, Documents, Archives, Programs or Others under the selected folder. Torrent layouts stay unchanged.",
       "defaultDownloadFolder": "پوشهٔ دانلود پیش‌فرض",
       "description": "فایل‌ها، سرعت دانلود و اتصال‌ها",
       "disk": {
