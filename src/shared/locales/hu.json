@@ -1683,6 +1683,8 @@
         "bandwidthPending": "A korlát alkalmazásához add meg mindkét kapcsolati sebességet."
       },
       "newTasks": "Új feladatok",
+      "autoCategorize": "Automatically organize downloads",
+      "autoCategorizeDesc": "Save link downloads in Video, Music, Images, Documents, Archives, Programs or Others under the selected folder. Torrent layouts stay unchanged.",
       "defaultDownloadFolder": "Alapértelmezett letöltési mappa",
       "autofillFromClipboard": "Hivatkozások automatikus beillesztése a vágólapról",
       "fillInLinksWhenOpeningNewTask": "Másolt hivatkozások beillesztése új feladat megnyitásakor.",

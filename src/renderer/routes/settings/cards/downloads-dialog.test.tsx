@@ -117,6 +117,40 @@ describe('<DownloadsDialog>', () => {
     })
   })
 
+  it('saves automatic organization only after submitting the dialog', async () => {
+    render(
+      <DownloadsDialog
+        open
+        onClose={vi.fn()}
+        labelKey="settings.cards.downloads.title"
+        descKey="settings.cards.downloads.desc"
+      />
+    )
+    const toggle = await screen.findByRole('switch', {
+      name: 'Automatically organize downloads',
+    })
+    await waitFor(() => expect(toggle).toBeEnabled())
+    expect(toggle).not.toBeChecked()
+    const user = userEvent.setup()
+    await user.click(toggle)
+    expect(
+      vi
+        .mocked(transport.invoke)
+        .mock.calls.some(
+          ([channel]) => channel === Commands.SaveDownloadsSettings
+        )
+    ).toBe(false)
+    await user.click(screen.getByRole('button', { name: /save/i }))
+    await waitFor(() =>
+      expect(transport.invoke).toHaveBeenCalledWith(
+        Commands.SaveDownloadsSettings,
+        expect.objectContaining({
+          settings: { app: { autoCategorizeDownloads: true } },
+        })
+      )
+    )
+  })
+
   it('defaults desktop deletion to trash and saves only the chosen mode with a warning', async () => {
     render(
       <DownloadsDialog

@@ -1669,6 +1669,8 @@
         "bandwidthPending": "この制限を適用するには、回線のダウンロード速度とアップロード速度の両方を入力してください。"
       },
       "newTasks": "新規タスク",
+      "autoCategorize": "Automatically organize downloads",
+      "autoCategorizeDesc": "Save link downloads in Video, Music, Images, Documents, Archives, Programs or Others under the selected folder. Torrent layouts stay unchanged.",
       "defaultDownloadFolder": "既定のダウンロードフォルダー",
       "autofillFromClipboard": "クリップボードからリンクを自動入力",
       "fillInLinksWhenOpeningNewTask": "新規タスクを開くと、コピーしたリンクを貼り付けます。",

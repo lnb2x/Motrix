@@ -2007,6 +2007,8 @@
     "desc": "Ρύθμιση του Motrix",
     "downloads": {
       "autofillFromClipboard": "Αυτόματη συμπλήρωση συνδέσμων από το πρόχειρο",
+      "autoCategorize": "Automatically organize downloads",
+      "autoCategorizeDesc": "Save link downloads in Video, Music, Images, Documents, Archives, Programs or Others under the selected folder. Torrent layouts stay unchanged.",
       "defaultDownloadFolder": "Προεπιλεγμένος φάκελος λήψεων",
       "description": "Αρχεία, ταχύτητα λήψης και συνδέσεις",
       "disk": {

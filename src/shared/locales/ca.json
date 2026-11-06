@@ -2026,6 +2026,8 @@
     "desc": "Configurar el Motrix",
     "downloads": {
       "autofillFromClipboard": "Emplenar els enllaços des del porta-retalls",
+      "autoCategorize": "Automatically organize downloads",
+      "autoCategorizeDesc": "Save link downloads in Video, Music, Images, Documents, Archives, Programs or Others under the selected folder. Torrent layouts stay unchanged.",
       "defaultDownloadFolder": "Carpeta de baixades predeterminada",
       "description": "Fitxers, velocitat de baixada i connexions",
       "disk": {

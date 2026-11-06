@@ -1669,6 +1669,8 @@
         "bandwidthPending": "Masukkan kedua kecepatan koneksi untuk menerapkan batas ini."
       },
       "newTasks": "Tugas baru",
+      "autoCategorize": "Automatically organize downloads",
+      "autoCategorizeDesc": "Save link downloads in Video, Music, Images, Documents, Archives, Programs or Others under the selected folder. Torrent layouts stay unchanged.",
       "defaultDownloadFolder": "Folder unduhan bawaan",
       "autofillFromClipboard": "Isi tautan dari papan klip secara otomatis",
       "fillInLinksWhenOpeningNewTask": "Tautan yang disalin akan diisi secara otomatis saat membuka tugas baru.",

@@ -2026,6 +2026,8 @@
     "desc": "Configurează Motrix",
     "downloads": {
       "autofillFromClipboard": "Completează automat linkurile din clipboard",
+      "autoCategorize": "Automatically organize downloads",
+      "autoCategorizeDesc": "Save link downloads in Video, Music, Images, Documents, Archives, Programs or Others under the selected folder. Torrent layouts stay unchanged.",
       "defaultDownloadFolder": "Dosar de descărcare implicit",
       "description": "Fișiere, viteză de descărcare și conexiuni",
       "disk": {

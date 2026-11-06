@@ -1697,6 +1697,8 @@
         "bandwidthPending": "Informe as duas velocidades da conexão para aplicar este limite."
       },
       "newTasks": "Novas tarefas",
+      "autoCategorize": "Automatically organize downloads",
+      "autoCategorizeDesc": "Save link downloads in Video, Music, Images, Documents, Archives, Programs or Others under the selected folder. Torrent layouts stay unchanged.",
       "defaultDownloadFolder": "Pasta de download padrão",
       "autofillFromClipboard": "Preencher links da área de transferência",
       "fillInLinksWhenOpeningNewTask": "Cola os links copiados ao abrir uma nova tarefa.",

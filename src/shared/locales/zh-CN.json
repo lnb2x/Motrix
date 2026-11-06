@@ -1669,6 +1669,8 @@
         "bandwidthPending": "填入下载和上传速度后生效。"
       },
       "newTasks": "新建任务",
+      "autoCategorize": "自动分类下载文件",
+      "autoCategorizeDesc": "将链接下载保存到所选目录下的 Video、Music、Images、Documents、Archives、Programs 或 Others 子目录。种子目录结构保持不变。",
       "defaultDownloadFolder": "默认保存位置",
       "autofillFromClipboard": "自动填入剪贴板链接",
       "fillInLinksWhenOpeningNewTask": "新建任务时，自动填入已复制的链接。",

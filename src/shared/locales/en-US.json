@@ -1683,6 +1683,8 @@
         "bandwidthPending": "Enter both connection speeds to apply this limit."
       },
       "newTasks": "New tasks",
+      "autoCategorize": "Automatically organize downloads",
+      "autoCategorizeDesc": "Save link downloads in Video, Music, Images, Documents, Archives, Programs or Others under the selected folder. Torrent layouts stay unchanged.",
       "defaultDownloadFolder": "Default download folder",
       "autofillFromClipboard": "Autofill links from clipboard",
       "fillInLinksWhenOpeningNewTask": "Paste copied links when opening a new task.",

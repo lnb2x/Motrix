@@ -2007,6 +2007,8 @@
     "desc": "Настройване на Motrix",
     "downloads": {
       "autofillFromClipboard": "Автоматично попълване на връзки от клипборда",
+      "autoCategorize": "Automatically organize downloads",
+      "autoCategorizeDesc": "Save link downloads in Video, Music, Images, Documents, Archives, Programs or Others under the selected folder. Torrent layouts stay unchanged.",
       "defaultDownloadFolder": "Папка за изтегляне по подразбиране",
       "description": "Файлове, скорост на изтегляне и връзки",
       "disk": {

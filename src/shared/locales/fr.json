@@ -2026,6 +2026,8 @@
     "desc": "Configurer Motrix",
     "downloads": {
       "autofillFromClipboard": "Remplir les liens depuis le presse-papiers",
+      "autoCategorize": "Automatically organize downloads",
+      "autoCategorizeDesc": "Save link downloads in Video, Music, Images, Documents, Archives, Programs or Others under the selected folder. Torrent layouts stay unchanged.",
       "defaultDownloadFolder": "Dossier de téléchargement par défaut",
       "description": "Fichiers, débit de téléchargement et connexions",
       "disk": {
